@@ -172,40 +172,19 @@ no_autorun_bin:
 	jmp app_selector		; And go to the app selector menu when BASIC ends
 
 
-	; Now we display a dialog box offering the user a choice of
-	; a menu-driven program selector, or a command-line interface
+	; Start at the command line. Programs can still be launched by name,
+	; or reached through the program selector after leaving the CLI.
 
 option_screen:
-	mov ax, os_init_msg		; Set up the welcome screen
-	mov bx, os_version_msg
-	mov cx, 10011111b		; Colour: white text on light blue
-	call os_draw_background
-
-	mov ax, dialog_string_1		; Ask if user wants app selector or command-line
-	mov bx, dialog_string_2
-	mov cx, dialog_string_3
-	mov dx, 1			; We want a two-option dialog box (OK or Cancel)
-	call os_dialog_box
-
-	cmp ax, 1			; If OK (option 0) chosen, start app selector
-	jne near app_selector
-
-	call os_clear_screen		; Otherwise clean screen and start the CLI
 	call os_command_line
 
-	jmp option_screen		; Offer menu/CLI choice after CLI has exited
+	jmp app_selector		; EXIT leaves the CLI for the program selector
 
 
 	; Data for the above code...
 
 	os_init_msg		db 'Welcome Abdullah', 0
 	os_version_msg		db 'Version ', MIKEOS_VER, 0
-
-	dialog_string_1		db 'Thanks for trying out TOS!', 0
-	dialog_string_2		db 'Please select an interface: OK for the', 0
-	dialog_string_3		db 'program menu, Cancel for command line.', 0
-
-
 
 app_selector:
 	mov ax, os_init_msg		; Draw main screen layout
@@ -217,7 +196,7 @@ app_selector:
 					; the resulting string location in AX
 					; (other registers are undetermined)
 
-	jc option_screen		; Return to the CLI/menu choice screen if Esc pressed
+	jc option_screen		; Return to the command line if Esc pressed
 
 	mov si, ax			; Did the user try to run 'KERNEL.BIN'?
 	mov di, kern_file_name
